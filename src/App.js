@@ -1,24 +1,32 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import firebase from "firebase/app";
+import "firebase/auth";
+import "firebase/database";
+import "firebase/storage";
+import { BrowserRouter as Router, Route, Redirect } from "react-router-dom";
+import {FirebaseAuthConsumer, FirebaseAuthProvider} from "@react-firebase/auth";
+import { FirebaseDatabaseProvider } from "@react-firebase/database";
+
+import Dashboard from "./components/Dashboard";
+import Login from "./components/Login";
+
+import { firebaseConfig } from "./config";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <FirebaseAuthProvider firebase={firebase} {...firebaseConfig}>
+      <FirebaseDatabaseProvider firebase={firebase} {...firebaseConfig}>
+        <FirebaseAuthConsumer>
+          {({ isSignedIn }) => {
+            return <Router>
+              <Route path="/login" render={() => isSignedIn ? <Redirect to="/dashboard" /> : <Login/>} />
+              <Route path="/" render={() => <Redirect to="/dashboard" />} />
+              <Route path="/dashboard" render={() => isSignedIn ? <Dashboard /> : <Redirect to="/login" />} />
+            </Router>
+          }}
+        </FirebaseAuthConsumer>
+      </FirebaseDatabaseProvider>
+    </FirebaseAuthProvider>
   );
 }
 
